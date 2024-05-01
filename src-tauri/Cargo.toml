@@ -1,9 +1,9 @@
 [package]
-name = "sm"
-version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
-edition = "2021"
+name = "skufeu launcher"
+version = "1.0.0"
+description = "Launcher for prikols"
+authors = ["Valtos"]
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -20,3 +20,10 @@ sha256 = "1.2.7"
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort" # Strip expensive panic clean-up logic
+codegen-units = 1 # Compile crates one after another so the compiler can optimize better
+lto = true # Enables link to optimizations
+opt-level = "s" # Optimize for binary size
+strip = true # Remove debug symbols
