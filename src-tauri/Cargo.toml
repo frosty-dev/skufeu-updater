@@ -1,5 +1,5 @@
 [package]
-name = "skufeu launcher"
+name = "skufeu_launcher"
 version = "1.0.0"
 description = "Launcher for prikols"
 authors = ["Valtos"]
