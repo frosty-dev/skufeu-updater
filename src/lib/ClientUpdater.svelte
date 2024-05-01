@@ -35,7 +35,6 @@
             return;
         }
         BUSY = true;
-        EXEC_DIR = await invoke("get_exec_path").then(path => path.substring(0, path.length - 6))
         let actual_content = await fetch($UPDATES_LINK + '/hash.json').then(r => r.data)
         let files_to_remove = [];
         if(await exists(EXEC_DIR + "hash.json")) {
