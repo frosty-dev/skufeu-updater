@@ -1,0 +1,83 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "sm",
+    "version": "0.0.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "fs": {
+        "all": true,
+        "scope": ["**"]
+      },
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": ["https://*"]
+      },
+      "path": {
+        "all": true
+      },
+      "dialog": {
+        "all": true
+      },
+      "window": {
+        "all": false,
+        "close": true,
+        "hide": true,
+        "show": true,
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true
+      }
+    },
+    "windows": [
+      {
+        "title": "sm",
+        "width": 500,
+        "height": 300,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "skufeu",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ]
+    },
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://skufeu.fdev.team/mc/launcher/{{target}}/{{arch}}/{{current_version}}"
+      ],
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkwODczQkUxOEVFNEY3NTMKUldSVDkrU080VHVIa0o4WXE2K0FtRGRZai93SStsekxReGxDU2lkOE44NW92Q0JRTWZGK2VHOXUK",
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}
