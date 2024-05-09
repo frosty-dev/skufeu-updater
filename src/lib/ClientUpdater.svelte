@@ -1,18 +1,19 @@
 <script>
-    import { writeTextFile, exists, removeFile, readTextFile } from "@tauri-apps/api/fs";
+    import { writeTextFile, exists, removeFile, removeDir, readTextFile, createDir } from "@tauri-apps/api/fs";
     import { fetch } from "@tauri-apps/api/http";
     import { open } from "@tauri-apps/api/dialog";
+     // @ts-ignore
+    import { metadata } from "tauri-plugin-fs-extra-api";
     // @ts-ignore
     import { download } from "tauri-plugin-upload-api";
     import { invoke } from '@tauri-apps/api/tauri'
     import { onMount } from "svelte";
     import { UPDATES_LINK, MAIN_LINK } from '../storage.js';
-
-    console.log($UPDATES_LINK)
     
     let EXEC_DIR = "";
 
     let CURRENT_TASK = "Нажми \"Проверить обновления\", чтобы синхронизировать моды и некоторые конфиги"
+    let LOGS = ""
 
     let BUSY = false;
 
@@ -30,19 +31,24 @@
         });
     }
 
+    async function append_log(data) {
+        LOGS = data + "\n" + LOGS
+    }
+
     async function update_content() {
         if(BUSY) {
             return;
         }
         BUSY = true;
-        let actual_content = await fetch($UPDATES_LINK + '/hash.json').then(r => r.data)
+        let actual_content = await fetch($UPDATES_LINK + '/hash_new.json').then(r => r.data)
         let files_to_remove = [];
-        if(await exists(EXEC_DIR + "hash.json")) {
-            files_to_remove = get_diff_changes(actual_content, JSON.parse(await readTextFile(EXEC_DIR + "hash.json")));
+        if(await exists(EXEC_DIR + "hashv1.json")) {
+            files_to_remove = get_diff_changes(actual_content, JSON.parse(await readTextFile(EXEC_DIR + "hashv1.json")));
         }
         let files_to_update = [];
         for (const ac of actual_content.filter((file) => file.hash !== "")) {
             CURRENT_TASK = "ПРОВЕРЯЕМ: " + ac.file;
+            append_log("CHECK: " + ac.file);
             if(await exists(EXEC_DIR + ac.file)) {
                 let current_file_hash = await invoke("get_hash", {filePath: EXEC_DIR + ac.file})
                 if(current_file_hash !== ac.hash) {
@@ -52,16 +58,27 @@
                 files_to_update.push(ac)
             }
         }
+        console.log("FTU")
         console.log(files_to_update)
+        console.log(files_to_remove)
         for (const removed of files_to_remove) {
-            await removeFile(EXEC_DIR + removed.file)
+            if(await exists(EXEC_DIR + removed.file)) {
+                let md = await metadata(EXEC_DIR + removed.file)
+                if(md.isDir) {
+                    await removeDir(EXEC_DIR + removed.file, { recursive: true })
+                } else {
+                    await removeFile(EXEC_DIR + removed.file)
+                }
+                append_log("RM: " + removed.file)
+            }
         }
 
         await download_content(files_to_update)
 
         CURRENT_TASK = "ОБНОВЛЕНО"
+        append_log("UPDATE DONE, МОЖЕШЬ ЗАКРЫВАТЬ ЁПТА")
         BUSY = false;
-        writeTextFile(EXEC_DIR + "hash.json", JSON.stringify(actual_content))
+        writeTextFile(EXEC_DIR + "hashv1.json", JSON.stringify(actual_content))
     }
 
     async function download_content(files_to_update) {
@@ -70,6 +87,11 @@
                 continue
             }
             let receivedLength = 0;
+            let checked_path = downloaded.file.replace(/[^\/]*$/, '');
+            if(!await exists(EXEC_DIR + checked_path)) {
+                console.log(checked_path)
+                createDir(EXEC_DIR + downloaded.file.replace(/[^\/]*$/, ''), { recursive: true })
+            }
             await download(
                 $UPDATES_LINK + "/" + downloaded.file,
                 EXEC_DIR + downloaded.file,
@@ -77,8 +99,10 @@
                     receivedLength += progress;
                     CURRENT_TASK = `Загружаем ${downloaded.file}, скачано ${receivedLength} из ${total} байт`
                 },
+                // @ts-ignore
                 { "Content-Type": "application/octet-stream" },
             );
+            append_log("DL: " + downloaded.file)
         };
     }
 
@@ -91,11 +115,11 @@
             defaultPath: EXEC_DIR,
         });
         if (Array.isArray(selected)) {
-            EXEC_DIR = selected[0];
+            EXEC_DIR = selected[0] + "\\";
         } else if (selected === null) {
-            EXEC_DIR = selected;
+            EXEC_DIR = selected + "\\";
         } else {
-            EXEC_DIR = selected;
+            EXEC_DIR = selected + "\\";
         }
     }
 
@@ -112,4 +136,5 @@
     <button on:click={select_modpack_dir}>Изменить локацию сборки</button>
 </span>
 
+<p class="logs">{LOGS}</p>
 <p class="status">{CURRENT_TASK}</p>

@@ -47,7 +47,7 @@
       {
         "title": "sm",
         "width": 500,
-        "height": 300,
+        "height": 600,
         "resizable": false,
         "decorations": false,
         "transparent": true

@@ -38,7 +38,7 @@ body {
 .real-container {
   top: 20px;
   width: 100%;
-  height: 280px;
+  height: 580px;
   position: absolute;
 }
 
@@ -148,4 +148,15 @@ button {
   right: 8px;
   top: 8px;
   width: 300px;
+}
+
+.logs {
+  background: #00000099;
+  font-size: 10px;
+  user-select: all;
+  color: #aaaaaa;
+  white-space-collapse: break-spaces;
+  padding: 4px;
+  height: 482px;
+  overflow-y: auto;
 }
